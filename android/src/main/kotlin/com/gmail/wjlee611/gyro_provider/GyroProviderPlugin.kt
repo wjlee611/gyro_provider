@@ -1,35 +1,48 @@
 package com.gmail.wjlee611.gyro_provider
 
-import androidx.annotation.NonNull
+import android.content.Context
+import android.hardware.Sensor
+import android.hardware.SensorManager
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin
-import io.flutter.plugin.common.MethodCall
-import io.flutter.plugin.common.MethodChannel
-import io.flutter.plugin.common.MethodChannel.MethodCallHandler
-import io.flutter.plugin.common.MethodChannel.Result
+import io.flutter.plugin.common.BinaryMessenger
+import io.flutter.plugin.common.EventChannel
 
 /** GyroProviderPlugin */
-class GyroProviderPlugin: FlutterPlugin, MethodCallHandler {
-  /// The MethodChannel that will the communication between Flutter and native Android
-  ///
-  /// This local reference serves to register the plugin with the Flutter Engine and unregister it
-  /// when the Flutter Engine is detached from the Activity
-  private lateinit var channel : MethodChannel
+class GyroProviderPlugin: FlutterPlugin {
+  private lateinit var gyroEventChannel : EventChannel
+  private lateinit var rotateEventChannel : EventChannel
+
+  private lateinit var gyroStreamHandler : StreamHandlerImpl
+  private lateinit var rotateStreamHandler : StreamHandlerImpl
 
   override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
-    channel = MethodChannel(flutterPluginBinding.binaryMessenger, "gyro_provider")
-    channel.setMethodCallHandler(this)
-  }
-
-  override fun onMethodCall(call: MethodCall, result: Result) {
-    if (call.method == "getPlatformVersion") {
-      result.success("Android ${android.os.Build.VERSION.RELEASE}")
-    } else {
-      result.notImplemented()
-    }
+    setupEventChannel(flutterPluginBinding.applicationContext, flutterPluginBinding.binaryMessenger)
   }
 
   override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
-    channel.setMethodCallHandler(null)
+    teardownEventChannel()
+  }
+
+  private fun setupEventChannel(context: Context, messenger: BinaryMessenger) {
+    val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
+
+    // GYROSCOPE
+    gyroEventChannel = EventChannel(messenger, "gyro_event_channel")
+    gyroStreamHandler = StreamHandlerImpl(sensorManager, Sensor.TYPE_GYROSCOPE)
+    gyroEventChannel.setStreamHandler(gyroStreamHandler)
+
+    // ROTATION
+    rotateEventChannel = EventChannel(messenger, "rotate_event_channel")
+    rotateStreamHandler = StreamHandlerImpl(sensorManager, Sensor.TYPE_GAME_ROTATION_VECTOR)
+    rotateEventChannel.setStreamHandler(rotateStreamHandler)
+  }
+
+  private fun teardownEventChannel() {
+    gyroEventChannel.setStreamHandler(null)
+    gyroStreamHandler.onCancel(null)
+
+    rotateEventChannel.setStreamHandler(null)
+    rotateStreamHandler.onCancel(null)
   }
 }
