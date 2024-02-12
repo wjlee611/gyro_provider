@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:gyro_provider/provider/gyroscope.dart';
 import 'package:gyro_provider/provider/rotation.dart';
+import 'package:gyro_provider/widgets/multi_stream_builder.dart';
 
 class GyroProvider extends StatefulWidget {
   const GyroProvider({super.key});
@@ -22,22 +23,22 @@ class _GyroProviderState extends State<GyroProvider> {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder(
-      stream: _gyroscope.getGyroscope(),
-      builder: (context, gyro) => StreamBuilder(
-        stream: _rotation.getRotation(),
-        builder: (context, rotate) => Column(
-          children: [
-            const Text('Gyroscope'),
-            Text(gyro.data?.x.toString() ?? 'No x data'),
-            Text(gyro.data?.y.toString() ?? 'No y data'),
-            Text(gyro.data?.z.toString() ?? 'No z data'),
-            const Text('Rotation'),
-            Text(rotate.data?.x.toString() ?? 'No x data'),
-            Text(rotate.data?.y.toString() ?? 'No y data'),
-            Text(rotate.data?.z.toString() ?? 'No z data'),
-          ],
-        ),
+    return MultiStreamBuilder(
+      streams: [
+        _gyroscope.getGyroscope(),
+        _rotation.getRotation(),
+      ],
+      builder: (context, snapshots) => Column(
+        children: [
+          const Text('Gyro'),
+          Text(snapshots[0].x.toString()),
+          Text(snapshots[0].y.toString()),
+          Text(snapshots[0].z.toString()),
+          const Text('Rotate'),
+          Text(snapshots[1].x.toString()),
+          Text(snapshots[1].y.toString()),
+          Text(snapshots[1].z.toString()),
+        ],
       ),
     );
   }
