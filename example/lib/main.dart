@@ -20,7 +20,14 @@ class _MyAppState extends State<MyApp> {
         appBar: AppBar(
           title: const Text('Plugin example app'),
         ),
-        body: const GyroProvider(),
+        body: GyroProvider(
+          gyroscope: (vector) {
+            print(vector);
+          },
+          rotation: (vector) {
+            print(vector);
+          },
+        ),
       ),
     );
   }

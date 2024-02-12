@@ -1,45 +1,88 @@
+import 'dart:async';
 import 'package:flutter/widgets.dart';
+import 'package:gyro_provider/models/vector_model.dart';
 import 'package:gyro_provider/provider/gyroscope.dart';
 import 'package:gyro_provider/provider/rotation.dart';
-import 'package:gyro_provider/widgets/multi_stream_builder.dart';
+
+typedef GyroscopeCallback = Function(VectorModel vector);
+typedef RotationCallback = Function(VectorModel vector);
 
 class GyroProvider extends StatefulWidget {
-  const GyroProvider({super.key});
+  final GyroscopeCallback? gyroscope;
+  final RotationCallback? rotation;
+  final Widget? child;
+
+  const GyroProvider({
+    super.key,
+    this.gyroscope,
+    this.rotation,
+    this.child,
+  });
 
   @override
   State<GyroProvider> createState() => _GyroProviderState();
 }
 
-class _GyroProviderState extends State<GyroProvider> {
-  late final Gyroscope _gyroscope;
-  late final Rotation _rotation;
+class _GyroProviderState extends State<GyroProvider>
+    with WidgetsBindingObserver {
+  final Gyroscope _gyroscope = Gyroscope();
+  final Rotation _rotation = Rotation();
+
+  StreamSubscription<VectorModel>? _gyroStreamSubscription;
+  StreamSubscription<VectorModel>? _rotateStreamSubscription;
+
+  VectorModel _gyroData = VectorModel(0, 0, 0);
+  VectorModel _rotateData = VectorModel(0, 0, 0);
 
   @override
   void initState() {
     super.initState();
-    _gyroscope = Gyroscope();
-    _rotation = Rotation();
+    WidgetsBinding.instance.addObserver(this);
+    _subscribe();
   }
 
   @override
-  Widget build(BuildContext context) {
-    return MultiStreamBuilder(
-      streams: [
-        _gyroscope.getGyroscope(),
-        _rotation.getRotation(),
-      ],
-      builder: (context, snapshots) => Column(
-        children: [
-          const Text('Gyro'),
-          Text(snapshots[0].x.toString()),
-          Text(snapshots[0].y.toString()),
-          Text(snapshots[0].z.toString()),
-          const Text('Rotate'),
-          Text(snapshots[1].x.toString()),
-          Text(snapshots[1].y.toString()),
-          Text(snapshots[1].z.toString()),
-        ],
-      ),
-    );
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    switch (state) {
+      case AppLifecycleState.resumed:
+        _subscribe();
+        break;
+      case AppLifecycleState.inactive:
+      case AppLifecycleState.paused:
+      case AppLifecycleState.detached:
+      case AppLifecycleState.hidden:
+        _unsubscribe();
+        break;
+    }
   }
+
+  @override
+  void dispose() {
+    _unsubscribe();
+    super.dispose();
+  }
+
+  void _subscribe() {
+    _gyroStreamSubscription = _gyroscope.getGyroscope().listen((event) {
+      setState(() {
+        _gyroData = event;
+        widget.gyroscope?.call(_gyroData);
+      });
+    });
+
+    _rotateStreamSubscription = _rotation.getRotation().listen((event) {
+      setState(() {
+        _rotateData = event;
+        widget.rotation?.call(_rotateData);
+      });
+    });
+  }
+
+  void _unsubscribe() {
+    _gyroStreamSubscription?.cancel();
+    _rotateStreamSubscription?.cancel();
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child ?? Container();
 }
