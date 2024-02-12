@@ -21,12 +21,14 @@ class _MyAppState extends State<MyApp> {
           title: const Text('Plugin example app'),
         ),
         body: GyroProvider(
-          gyroscope: (vector) {
-            print(vector);
-          },
-          rotation: (vector) {
-            print(vector);
-          },
+          builder: (context, gyroscope, rotation) => Column(
+            children: [
+              const Text('Gyroscope'),
+              Text(gyroscope.x.toString()),
+              Text(gyroscope.y.toString()),
+              Text(gyroscope.z.toString()),
+            ],
+          ),
         ),
       ),
     );

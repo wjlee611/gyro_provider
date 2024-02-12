@@ -4,26 +4,33 @@ import 'package:gyro_provider/models/vector_model.dart';
 import 'package:gyro_provider/provider/gyroscope.dart';
 import 'package:gyro_provider/provider/rotation.dart';
 
-typedef GyroscopeCallback = Function(VectorModel vector);
-typedef RotationCallback = Function(VectorModel vector);
+typedef GyroscopeWidgetBuilder = Widget Function(
+  BuildContext context,
+  VectorModel gyroscope,
+  VectorModel rotation,
+);
 
-class GyroProvider extends StatefulWidget {
-  final GyroscopeCallback? gyroscope;
-  final RotationCallback? rotation;
-  final Widget? child;
+abstract class _GyroProviderBase extends StatefulWidget {
+  final Function(VectorModel vector)? gyroscope;
+  final Function(VectorModel vector)? rotation;
 
-  const GyroProvider({
+  const _GyroProviderBase({
     super.key,
     this.gyroscope,
     this.rotation,
-    this.child,
   });
 
+  Widget build(
+    BuildContext context,
+    VectorModel gyroscope,
+    VectorModel rotation,
+  );
+
   @override
-  State<GyroProvider> createState() => _GyroProviderState();
+  State<_GyroProviderBase> createState() => _GyroProviderBaseState();
 }
 
-class _GyroProviderState extends State<GyroProvider>
+class _GyroProviderBaseState extends State<_GyroProviderBase>
     with WidgetsBindingObserver {
   final Gyroscope _gyroscope = Gyroscope();
   final Rotation _rotation = Rotation();
@@ -84,5 +91,78 @@ class _GyroProviderState extends State<GyroProvider>
   }
 
   @override
-  Widget build(BuildContext context) => widget.child ?? Container();
+  Widget build(BuildContext context) => widget.build(
+        context,
+        _gyroData,
+        _rotateData,
+      );
+}
+
+class GyroProvider extends _GyroProviderBase {
+  const GyroProvider({
+    super.key,
+    super.gyroscope,
+    super.rotation,
+    required this.builder,
+  });
+
+  final GyroscopeWidgetBuilder builder;
+
+  @override
+  Widget build(
+    BuildContext context,
+    VectorModel gyroscope,
+    VectorModel rotation,
+  ) =>
+      builder(context, gyroscope, rotation);
+}
+
+enum _GyroWidgetMode {
+  card,
+  parallel,
+  glow,
+}
+
+class _GyroWidgetBase extends _GyroProviderBase {
+  const _GyroWidgetBase({
+    super.key,
+    required this.child,
+    this.mode = _GyroWidgetMode.card,
+  });
+
+  final _GyroWidgetMode mode;
+  final Widget child;
+
+  @override
+  Widget build(
+    BuildContext context,
+    VectorModel gyroscope,
+    VectorModel rotation,
+  ) =>
+      // TODO: build different animation with mode
+      Container(
+        child: child,
+      );
+}
+
+class GyroWidget extends _GyroWidgetBase {
+  const GyroWidget({
+    super.key,
+    required super.child,
+  });
+
+  const GyroWidget.card({
+    super.key,
+    required super.child,
+  }) : super(mode: _GyroWidgetMode.card);
+
+  const GyroWidget.parallel({
+    super.key,
+    required super.child,
+  }) : super(mode: _GyroWidgetMode.parallel);
+
+  const GyroWidget.glow({
+    super.key,
+    required super.child,
+  }) : super(mode: _GyroWidgetMode.glow);
 }
