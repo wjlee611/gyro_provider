@@ -64,30 +64,22 @@ abstract class _GyroProviderBase extends StatefulWidget {
 
 class _GyroProviderBaseState extends State<_GyroProviderBase>
     with WidgetsBindingObserver {
-  VectorModel _gyroData = VectorModel(0, 0, 0);
-  VectorModel _rotateData = VectorModel(0, 0, 0);
-
-  VectorModel? _updatedCenter;
+  final ValueNotifier<VectorModel> _gyroData =
+      ValueNotifier(VectorModel(0, 0, 0));
+  final ValueNotifier<VectorModel> _rotateData =
+      ValueNotifier(VectorModel(0, 0, 0));
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     GyroscopeProvider().gyroStream.listen((event) {
-      setState(() {
-        _gyroData = event;
-        widget.gyroscope?.call(_gyroData);
-      });
+      _gyroData.value = event;
+      widget.gyroscope?.call(event);
     });
     RotationProvider().rotateStream.listen((event) {
-      setState(() {
-        _rotateData = event;
-        widget.rotation?.call(_rotateData);
-        if (event.x != 0.0 || event.y != 0.0 || event.z != 0.0) {
-          _updatedCenter ??= event;
-        }
-      });
-      print(_updatedCenter);
+      _rotateData.value = event;
+      widget.rotation?.call(event);
     });
   }
 
@@ -95,33 +87,46 @@ class _GyroProviderBaseState extends State<_GyroProviderBase>
   Widget build(BuildContext context) {
     ///
     if (widget.mode == _GyroWidgetMode.provide) {
-      return widget.build(context, _gyroData, _rotateData);
+      return ValueListenableBuilder(
+        valueListenable: _gyroData,
+        builder: (context, gyroValue, _) => ValueListenableBuilder(
+          valueListenable: _rotateData,
+          builder: (context, rotateValue, _) =>
+              widget.build(context, gyroValue, rotateValue),
+        ),
+      );
     }
 
     ///
-    return AnimatedContainer(
-      curve: Curves.easeInOut,
-      duration: const Duration(milliseconds: 1),
-      transform: Matrix4(
-        1,
-        0,
-        0,
-        (_rotateData.y - (_updatedCenter?.y ?? 0)) * 0.01,
-        0,
-        1,
-        0,
-        (_rotateData.x - (_updatedCenter?.x ?? 0)) * 0.01,
-        0,
-        0,
-        1,
-        0,
-        0,
-        0,
-        0,
-        1,
+    return ValueListenableBuilder(
+      valueListenable: _gyroData,
+      builder: (context, gyroValue, _) => ValueListenableBuilder(
+        valueListenable: _rotateData,
+        builder: (context, rotateValue, _) => AnimatedContainer(
+          curve: Curves.easeInOut,
+          duration: const Duration(milliseconds: 1),
+          transform: Matrix4(
+            1,
+            0,
+            0,
+            (rotateValue.y) * 0.01,
+            0,
+            1,
+            0,
+            (rotateValue.x) * 0.01,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+          ),
+          transformAlignment: Alignment.center,
+          child: widget.build(context, gyroValue, rotateValue),
+        ),
       ),
-      transformAlignment: Alignment.center,
-      child: widget.build(context, _gyroData, _rotateData),
     );
   }
 }

@@ -24,6 +24,9 @@ class _MyAppState extends State<MyApp> {
           child: Column(
             children: [
               GyroProvider(
+                gyroscope: (vector) {
+                  print(vector);
+                },
                 builder: (context, gyroscope, rotation) => Column(
                   children: [
                     const Text('rotation'),
