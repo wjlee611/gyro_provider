@@ -20,13 +20,29 @@ class _MyAppState extends State<MyApp> {
         appBar: AppBar(
           title: const Text('Plugin example app'),
         ),
-        body: GyroProvider(
-          builder: (context, gyroscope, rotation) => Column(
+        body: Center(
+          child: Column(
             children: [
-              const Text('Gyroscope'),
-              Text(gyroscope.x.toString()),
-              Text(gyroscope.y.toString()),
-              Text(gyroscope.z.toString()),
+              GyroProvider(
+                rotation: (vector) {
+                  print(vector);
+                },
+                builder: (context, gyroscope, rotation) => Column(
+                  children: [
+                    const Text('Gyroscope'),
+                    Text(gyroscope.x.toString()),
+                    Text(gyroscope.y.toString()),
+                    Text(gyroscope.z.toString()),
+                  ],
+                ),
+              ),
+              GyroWidget.card(
+                child: Container(
+                  color: Colors.red,
+                  width: 100,
+                  height: 100,
+                ),
+              ),
             ],
           ),
         ),
