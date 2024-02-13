@@ -67,6 +67,8 @@ class _GyroProviderBaseState extends State<_GyroProviderBase>
   VectorModel _gyroData = VectorModel(0, 0, 0);
   VectorModel _rotateData = VectorModel(0, 0, 0);
 
+  VectorModel? _updatedCenter;
+
   @override
   void initState() {
     super.initState();
@@ -81,7 +83,11 @@ class _GyroProviderBaseState extends State<_GyroProviderBase>
       setState(() {
         _rotateData = event;
         widget.rotation?.call(_rotateData);
+        if (event.x != 0.0 || event.y != 0.0 || event.z != 0.0) {
+          _updatedCenter ??= event;
+        }
       });
+      print(_updatedCenter);
     });
   }
 
@@ -94,8 +100,27 @@ class _GyroProviderBaseState extends State<_GyroProviderBase>
 
     ///
     return AnimatedContainer(
-      duration: const Duration(milliseconds: 500),
-      transform: Matrix4.skew(_rotateData.y * 10, _rotateData.z * 10),
+      curve: Curves.easeInOut,
+      duration: const Duration(milliseconds: 1),
+      transform: Matrix4(
+        1,
+        0,
+        0,
+        (_rotateData.y - (_updatedCenter?.y ?? 0)) * 0.01,
+        0,
+        1,
+        0,
+        (_rotateData.x - (_updatedCenter?.x ?? 0)) * 0.01,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+      ),
+      transformAlignment: Alignment.center,
       child: widget.build(context, _gyroData, _rotateData),
     );
   }

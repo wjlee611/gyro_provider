@@ -24,17 +24,17 @@ class _MyAppState extends State<MyApp> {
           child: Column(
             children: [
               GyroProvider(
-                rotation: (vector) {
-                  print(vector);
-                },
                 builder: (context, gyroscope, rotation) => Column(
                   children: [
-                    const Text('Gyroscope'),
-                    Text(gyroscope.x.toString()),
-                    Text(gyroscope.y.toString()),
-                    Text(gyroscope.z.toString()),
+                    const Text('rotation'),
+                    Text(rotation.x.toString()),
+                    Text(rotation.y.toString()),
+                    Text(rotation.z.toString()),
                   ],
                 ),
+              ),
+              const SizedBox(
+                height: 100,
               ),
               GyroWidget.card(
                 child: Container(
