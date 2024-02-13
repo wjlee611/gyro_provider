@@ -29,10 +29,10 @@ class _MyAppState extends State<MyApp> {
                 // },
                 builder: (context, gyroscope, rotation) => Column(
                   children: [
-                    const Text('rotation'),
-                    Text(rotation.x.toString()),
-                    Text(rotation.y.toString()),
-                    Text(rotation.z.toString()),
+                    const Text('gyroscope'),
+                    Text(gyroscope.x.toString()),
+                    Text(gyroscope.y.toString()),
+                    Text(gyroscope.z.toString()),
                   ],
                 ),
               ),

@@ -69,7 +69,7 @@ class _GyroProviderBaseState extends State<_GyroProviderBase>
   final ValueNotifier<VectorModel> _rotateData =
       ValueNotifier(VectorModel(0, 0, 0));
 
-  VectorModel? _centerRotate;
+  final ValueNotifier<double> _transform = ValueNotifier(0.0);
 
   @override
   void initState() {
@@ -78,15 +78,14 @@ class _GyroProviderBaseState extends State<_GyroProviderBase>
     GyroscopeProvider().gyroStream.listen((event) {
       _gyroData.value = event;
       widget.gyroscope?.call(event);
+      _transform.value += event.y;
+      if (event.y.abs() < 0.01) {
+        _transform.value = 0;
+      }
     });
     RotationProvider().rotateStream.listen((event) {
       _rotateData.value = event;
       widget.rotation?.call(event);
-      if (event.x != 0 || event.y != 0 || event.z != 0) {
-        setState(() {
-          _centerRotate ??= event;
-        });
-      }
     });
   }
 
@@ -106,29 +105,22 @@ class _GyroProviderBaseState extends State<_GyroProviderBase>
 
     ///
     return ValueListenableBuilder(
-      valueListenable: _gyroData,
-      builder: (context, gyroValue, _) => ValueListenableBuilder(
-        valueListenable: _rotateData,
-        builder: (context, rotateValue, _) {
-          var zAngle = (rotateValue.z - (_centerRotate?.z ?? 0));
-
-          if (zAngle > 1) {
-            zAngle -= 2;
-          }
-          if (zAngle < -1) {
-            zAngle += 2;
-          }
-
-          print(zAngle);
-
-          return AnimatedContainer(
-            curve: Curves.easeInOut,
-            duration: const Duration(milliseconds: 1),
-            transform: Matrix4.identity()..setEntry(3, 0, zAngle * 0.01),
-            transformAlignment: Alignment.center,
-            child: widget.build(context, gyroValue, rotateValue),
-          );
-        },
+      valueListenable: _transform,
+      builder: (context, value, child) => AnimatedContainer(
+        curve: Curves.easeInOut,
+        duration: const Duration(milliseconds: 1),
+        transform: Matrix4.identity()
+          ..setEntry(
+            3,
+            0,
+            value * 0.001,
+          ),
+        transformAlignment: Alignment.center,
+        child: widget.build(
+          context,
+          VectorModel(0, 0, 0),
+          VectorModel(0, 0, 0),
+        ),
       ),
     );
   }
