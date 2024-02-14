@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/widgets.dart';
 import 'package:gyro_provider/models/vector_model.dart';
 import 'package:gyro_provider/provider/gyroscope_provider.dart';
@@ -64,6 +65,7 @@ abstract class _GyroProviderBase extends StatefulWidget {
 
 class _GyroProviderBaseState extends State<_GyroProviderBase>
     with SingleTickerProviderStateMixin {
+  //
   final ValueNotifier<VectorModel> _gyroData =
       ValueNotifier(VectorModel(0, 0, 0));
   final ValueNotifier<VectorModel> _rotateData =
@@ -79,64 +81,81 @@ class _GyroProviderBaseState extends State<_GyroProviderBase>
 
   bool _onCenter = false;
 
-  late final CurvedAnimation _linearCurve = CurvedAnimation(
-    parent: _animationController,
-    curve: Curves.linear,
-  );
+  Timer? _resetTimer;
 
-  late final CurvedAnimation _easeCurve = CurvedAnimation(
-    parent: _animationController,
-    curve: Curves.easeOut,
-  );
+  late final CurvedAnimation _linearCurve;
+  late final CurvedAnimation _easeCurve;
 
   @override
   void initState() {
     super.initState();
-    GyroscopeProvider().gyroStream.listen((event) {
-      _gyroData.value = event;
-      widget.gyroscope?.call(event);
+    GyroscopeProvider().gyroStream.listen(_gyroStreamSubscriptionListener);
+    RotationProvider().rotateStream.listen(_rotateStreamSubscriptionListener);
 
-      if (widget.mode != _GyroWidgetMode.provide) {
-        if (event.y.abs() < 0.01) {
-          _xTarget = 0;
-          _yTarget = 0;
-          _onCenter = true;
-          _animation();
-        } else {
-          _xTarget += event.x;
-          _yTarget += event.y;
-        }
-      }
-      if (!_onCenter) {
-        _animation();
-      }
-    });
-    RotationProvider().rotateStream.listen((event) {
-      _rotateData.value = event;
-      widget.rotation?.call(event);
-    });
+    // Initialize animation
+    if (widget.mode != _GyroWidgetMode.provide) {
+      _animationController = AnimationController(
+        vsync: this,
+        duration: const Duration(milliseconds: 500),
+      )
+        ..addListener(_animationListener)
+        ..addStatusListener(_animationStatusListener);
 
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 500),
-    )
-      ..addListener(_animationListener)
-      ..addStatusListener(_animationStatusListener);
-    _xAnimation = Tween<double>(
-      begin: 0,
-      end: _xTarget,
-    ).animate(_linearCurve);
-    _yAnimation = Tween<double>(
-      begin: 0,
-      end: _yTarget,
-    ).animate(_linearCurve);
-    _animationController.forward();
+      _linearCurve = CurvedAnimation(
+        parent: _animationController,
+        curve: Curves.linear,
+      );
+      _easeCurve = CurvedAnimation(
+        parent: _animationController,
+        curve: Curves.easeOut,
+      );
+
+      _xAnimation = Tween<double>(
+        begin: 0,
+        end: _xTarget,
+      ).animate(_linearCurve);
+      _yAnimation = Tween<double>(
+        begin: 0,
+        end: _yTarget,
+      ).animate(_linearCurve);
+      _animationController.forward();
+    }
   }
 
   @override
   void dispose() {
     _animationController.dispose();
     super.dispose();
+  }
+
+  void _gyroStreamSubscriptionListener(VectorModel value) {
+    _gyroData.value = value;
+    widget.gyroscope?.call(value);
+
+    if (widget.mode != _GyroWidgetMode.provide) {
+      if (value.y.abs() < 0.1) {
+        _resetTimer ??= Timer(const Duration(seconds: 1), () {
+          _xTarget = 0;
+          _yTarget = 0;
+          _resetTimer = null;
+          _onCenter = true;
+          _animation(curve: _easeCurve);
+        });
+      } else {
+        _xTarget += value.x;
+        _yTarget += value.y;
+        _resetTimer?.cancel();
+        _resetTimer = null;
+      }
+      if (!_onCenter) {
+        _animation(curve: _linearCurve);
+      }
+    }
+  }
+
+  void _rotateStreamSubscriptionListener(VectorModel value) {
+    _rotateData.value = value;
+    widget.rotation?.call(value);
   }
 
   void _animationListener() {
@@ -149,35 +168,24 @@ class _GyroProviderBaseState extends State<_GyroProviderBase>
     }
   }
 
-  void _animation() {
+  void _animation({required CurvedAnimation curve}) {
     var xCurr = _xAnimation.value;
     var yCurr = _yAnimation.value;
     _animationController.reset();
-    if (_onCenter) {
-      _xAnimation = Tween<double>(
-        begin: xCurr,
-        end: _xTarget,
-      ).animate(_easeCurve);
-      _yAnimation = Tween<double>(
-        begin: yCurr,
-        end: _yTarget,
-      ).animate(_easeCurve);
-    } else {
-      _xAnimation = Tween<double>(
-        begin: xCurr,
-        end: _xTarget,
-      ).animate(_linearCurve);
-      _yAnimation = Tween<double>(
-        begin: yCurr,
-        end: _yTarget,
-      ).animate(_linearCurve);
-    }
+    _xAnimation = Tween<double>(
+      begin: xCurr,
+      end: _xTarget,
+    ).animate(curve);
+    _yAnimation = Tween<double>(
+      begin: yCurr,
+      end: _yTarget,
+    ).animate(curve);
     _animationController.forward();
   }
 
   @override
   Widget build(BuildContext context) {
-    ///
+    //
     if (widget.mode == _GyroWidgetMode.provide) {
       return ValueListenableBuilder(
         valueListenable: _gyroData,
@@ -189,12 +197,12 @@ class _GyroProviderBaseState extends State<_GyroProviderBase>
       );
     }
 
-    ///
+    //
     return Transform(
       alignment: Alignment.center,
       transform: Matrix4.identity()
         ..setEntry(3, 0, -_yAnimation.value * 0.002)
-        ..setEntry(3, 1, -_xAnimation.value * 0.002)
+        ..setEntry(3, 1, -_xAnimation.value * 0.004)
         ..setEntry(0, 3, _yAnimation.value * 10)
         ..setEntry(1, 3, _xAnimation.value * 10),
       child: widget.build(
