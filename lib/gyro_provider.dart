@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:flutter/widgets.dart';
 import 'package:gyro_provider/models/vector_model.dart';
-import 'package:gyro_provider/provider/gyroscope_provider.dart';
-import 'package:gyro_provider/provider/rotation_provider.dart';
+import 'package:gyro_provider/controller/gyroscope_controller.dart';
+import 'package:gyro_provider/controller/rotation_controller.dart';
 
 ///
 enum _GyroWidgetMode {
@@ -63,6 +63,10 @@ class GyroProvider extends StatefulWidget {
 class _GyroProviderState extends State<GyroProvider>
     with SingleTickerProviderStateMixin {
   //
+  late final GyroscopeController _gyroscopeController;
+  late final RotationController _rotationController;
+
+  //
   final ValueNotifier<VectorModel> _gyroData =
       ValueNotifier(VectorModel(0, 0, 0));
   final ValueNotifier<VectorModel> _rotateData =
@@ -91,9 +95,11 @@ class _GyroProviderState extends State<GyroProvider>
   @override
   void initState() {
     super.initState();
+    _rotationController = RotationController();
     // Add stream subscription listener
-    GyroscopeProvider().gyroStream.listen(_gyroStreamSubscriptionListener);
-    RotationProvider().rotateStream.listen(_rotateStreamSubscriptionListener);
+
+    _gyroscopeController.addListener(_gyroListener);
+    _rotationController.addListener(_rotateListener);
 
     // Initialize animation
     _animationController = AnimationController(
@@ -125,6 +131,9 @@ class _GyroProviderState extends State<GyroProvider>
 
   @override
   void dispose() {
+    _gyroscopeController.removeListener(_gyroListener);
+    _rotationController.removeListener(_rotateListener);
+
     _animationController.reset();
     _animationController.removeListener(_animationListener);
     _animationController.removeStatusListener(_animationStatusListener);
@@ -133,7 +142,8 @@ class _GyroProviderState extends State<GyroProvider>
   }
 
   //
-  void _gyroStreamSubscriptionListener(VectorModel value) {
+  void _gyroListener() {
+    var value = _gyroscopeController.value;
     _gyroData.value = value;
     widget.gyroscope?.call(value);
 
@@ -159,7 +169,8 @@ class _GyroProviderState extends State<GyroProvider>
   }
 
   //
-  void _rotateStreamSubscriptionListener(VectorModel value) {
+  void _rotateListener() {
+    var value = _rotationController.value;
     _rotateData.value = value;
     widget.rotation?.call(value);
   }
@@ -215,7 +226,7 @@ class _GyroProviderState extends State<GyroProvider>
       alignment: Alignment.center,
       transform: Matrix4.identity()
         ..setEntry(3, 0, -_yAnimation.value * 0.002)
-        ..setEntry(3, 1, -_xAnimation.value * 0.004)
+        ..setEntry(3, 1, -_xAnimation.value * 0.002)
         ..setEntry(0, 3, _yAnimation.value * 10)
         ..setEntry(1, 3, _xAnimation.value * 10),
       child: widget.child,
