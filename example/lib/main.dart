@@ -24,9 +24,9 @@ class _MyAppState extends State<MyApp> {
           child: Column(
             children: [
               GyroProvider(
-                // gyroscope: (vector) {
-                //   print(vector);
-                // },
+                gyroscope: (vector) {
+                  print(vector);
+                },
                 builder: (context, gyroscope, rotation) => Column(
                   children: [
                     const Text('gyroscope'),
@@ -39,7 +39,7 @@ class _MyAppState extends State<MyApp> {
               const SizedBox(
                 height: 100,
               ),
-              GyroProvider.card(
+              GyroProvider.skew(
                 child: Container(
                   color: Colors.red,
                   width: 100,
