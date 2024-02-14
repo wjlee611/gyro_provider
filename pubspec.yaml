@@ -1,11 +1,11 @@
 name: gyro_provider
-description: "A new Flutter plugin project."
+description: "A plugin that provides data from gyroscopes and rotation sensors and related handy widgets."
 version: 0.0.1
-homepage:
+homepage: "https://wjlee611.github.io/"
 
 environment:
-  sdk: '>=3.2.3 <4.0.0'
-  flutter: '>=3.3.0'
+  sdk: ">=3.2.3 <4.0.0"
+  flutter: ">=3.3.0"
 
 dependencies:
   flutter:

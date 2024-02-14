@@ -1,3 +1,7 @@
 ## 0.0.1
 
-* TODO: Describe initial release.
+### Publish test version
+
+- MVP version with only major features implemented
+- iOS EventChannel are not implemented.
+- README.md file not created.
