@@ -39,7 +39,7 @@ class _MyAppState extends State<MyApp> {
               const SizedBox(
                 height: 100,
               ),
-              GyroWidget.card(
+              GyroProvider.card(
                 child: Container(
                   color: Colors.red,
                   width: 100,
