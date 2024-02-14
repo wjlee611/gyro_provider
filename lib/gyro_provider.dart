@@ -63,30 +63,116 @@ abstract class _GyroProviderBase extends StatefulWidget {
 }
 
 class _GyroProviderBaseState extends State<_GyroProviderBase>
-    with WidgetsBindingObserver {
+    with SingleTickerProviderStateMixin {
   final ValueNotifier<VectorModel> _gyroData =
       ValueNotifier(VectorModel(0, 0, 0));
   final ValueNotifier<VectorModel> _rotateData =
       ValueNotifier(VectorModel(0, 0, 0));
 
-  final ValueNotifier<double> _transform = ValueNotifier(0.0);
+  late final AnimationController _animationController;
+
+  late Animation<double> _xAnimation;
+  late Animation<double> _yAnimation;
+
+  double _xTarget = 0;
+  double _yTarget = 0;
+
+  bool _onCenter = false;
+
+  late final CurvedAnimation _linearCurve = CurvedAnimation(
+    parent: _animationController,
+    curve: Curves.linear,
+  );
+
+  late final CurvedAnimation _easeCurve = CurvedAnimation(
+    parent: _animationController,
+    curve: Curves.easeOut,
+  );
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this);
     GyroscopeProvider().gyroStream.listen((event) {
       _gyroData.value = event;
       widget.gyroscope?.call(event);
-      _transform.value += event.y;
-      if (event.y.abs() < 0.01) {
-        _transform.value = 0;
+
+      if (widget.mode != _GyroWidgetMode.provide) {
+        if (event.y.abs() < 0.01) {
+          _xTarget = 0;
+          _yTarget = 0;
+          _onCenter = true;
+          _animation();
+        } else {
+          _xTarget += event.x;
+          _yTarget += event.y;
+        }
+      }
+      if (!_onCenter) {
+        _animation();
       }
     });
     RotationProvider().rotateStream.listen((event) {
       _rotateData.value = event;
       widget.rotation?.call(event);
     });
+
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+    )
+      ..addListener(_animationListener)
+      ..addStatusListener(_animationStatusListener);
+    _xAnimation = Tween<double>(
+      begin: 0,
+      end: _xTarget,
+    ).animate(_linearCurve);
+    _yAnimation = Tween<double>(
+      begin: 0,
+      end: _yTarget,
+    ).animate(_linearCurve);
+    _animationController.forward();
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  void _animationListener() {
+    setState(() {});
+  }
+
+  void _animationStatusListener(AnimationStatus status) {
+    if (status == AnimationStatus.completed) {
+      _onCenter = false;
+    }
+  }
+
+  void _animation() {
+    var xCurr = _xAnimation.value;
+    var yCurr = _yAnimation.value;
+    _animationController.reset();
+    if (_onCenter) {
+      _xAnimation = Tween<double>(
+        begin: xCurr,
+        end: _xTarget,
+      ).animate(_easeCurve);
+      _yAnimation = Tween<double>(
+        begin: yCurr,
+        end: _yTarget,
+      ).animate(_easeCurve);
+    } else {
+      _xAnimation = Tween<double>(
+        begin: xCurr,
+        end: _xTarget,
+      ).animate(_linearCurve);
+      _yAnimation = Tween<double>(
+        begin: yCurr,
+        end: _yTarget,
+      ).animate(_linearCurve);
+    }
+    _animationController.forward();
   }
 
   @override
@@ -104,23 +190,17 @@ class _GyroProviderBaseState extends State<_GyroProviderBase>
     }
 
     ///
-    return ValueListenableBuilder(
-      valueListenable: _transform,
-      builder: (context, value, child) => AnimatedContainer(
-        curve: Curves.easeInOut,
-        duration: const Duration(milliseconds: 1),
-        transform: Matrix4.identity()
-          ..setEntry(
-            3,
-            0,
-            value * 0.001,
-          ),
-        transformAlignment: Alignment.center,
-        child: widget.build(
-          context,
-          VectorModel(0, 0, 0),
-          VectorModel(0, 0, 0),
-        ),
+    return Transform(
+      alignment: Alignment.center,
+      transform: Matrix4.identity()
+        ..setEntry(3, 0, -_yAnimation.value * 0.002)
+        ..setEntry(3, 1, -_xAnimation.value * 0.002)
+        ..setEntry(0, 3, _yAnimation.value * 10)
+        ..setEntry(1, 3, _xAnimation.value * 10),
+      child: widget.build(
+        context,
+        VectorModel(0, 0, 0),
+        VectorModel(0, 0, 0),
       ),
     );
   }
