@@ -35,14 +35,22 @@ class GyroProvider extends StatefulWidget {
     this.rotation,
     this.builder,
   })  : _mode = _GyroWidgetMode.provide,
-        child = null;
+        child = null,
+        horizontalLock = false,
+        verticalLock = false,
+        centerLock = false,
+        resetTime = const Duration(seconds: 1),
+        sensitivity = 0.002,
+        shift = 10.0,
+        animationDuration = const Duration(milliseconds: 500),
+        reverse = false;
 
   /// Callback function, which is returns the gyroscope value of the device.
   ///
   /// ---
   ///
   /// ### Example
-  /// ```
+  /// ```dart
   /// GyroProvider(
   ///   gyroscope: (vector) {
   ///     // using vector
@@ -57,7 +65,7 @@ class GyroProvider extends StatefulWidget {
   /// ---
   ///
   /// ### Example
-  /// ```
+  /// ```dart
   /// GyroProvider(
   ///   rotation: (vector) {
   ///     // using vector
@@ -72,7 +80,7 @@ class GyroProvider extends StatefulWidget {
   /// ---
   ///
   /// ### Example
-  /// ```
+  /// ```dart
   /// GyroProvider(
   ///   builder: (context, gyroscope, rotation) => Column(
   ///     children: [
@@ -98,20 +106,41 @@ class GyroProvider extends StatefulWidget {
   ///
   /// ---
   ///
-  /// - [child] \
-  ///   Widget that you want to transform.
+  /// ### Modifiers
   ///
-  /// ---
+  /// - child
+  /// - horizontalLock
+  /// - verticalLock
+  /// - centerLock
+  /// - resetTime
+  /// - sensitivity
+  /// - shift
+  /// - animationDuration
+  /// - reverse
+  ///
+  /// <br />
   ///
   /// ### Example
-  /// ```
+  /// ```dart
   /// GyroProvider.skew(
+  ///   verticalLock: true,
+  ///   resetTime: const Duration(seconds: 2),
+  ///   shift: 12,
+  ///   reverse: true,
   ///   child: ChildWidget(),
   /// )
   /// ```
   const GyroProvider.skew({
     super.key,
     required this.child,
+    this.horizontalLock = false,
+    this.verticalLock = false,
+    this.centerLock = false,
+    this.resetTime = const Duration(seconds: 1),
+    this.sensitivity = 0.002,
+    this.shift = 10.0,
+    this.animationDuration = const Duration(milliseconds: 500),
+    this.reverse = false,
   })  : _mode = _GyroWidgetMode.skew,
         gyroscope = null,
         rotation = null,
@@ -120,12 +149,77 @@ class GyroProvider extends StatefulWidget {
   /// Widget that you want to transform.
   final Widget? child;
 
-  /// TODO: add options
-  /// 1. horizontal/vertical lock
-  /// 2. center lock
-  /// 3. center reset time
-  /// 4. sensitivity
-  /// 5. reverse
+  /// You can locked the horizontal transform of a widget
+  /// when the device is rotated in the horizontal direction.
+  ///
+  /// ---
+  ///
+  /// The default value is `false`.
+  final bool horizontalLock;
+
+  /// You can locked the vertical transform of a widget
+  /// when the device is rotated in the vertical direction.
+  ///
+  /// ---
+  ///
+  /// The default value is `false`.
+  final bool verticalLock;
+
+  /// You can locked the ability to reset the reference point (center).
+  ///
+  /// _**Notice**_
+  /// - The orientation the device is facing at the time the widget is first built
+  ///   is set as the reference point (center).
+  /// - Because it rotates with the amount of change in the gyroscope sensor,
+  ///   the reference point (center) may shift depending on
+  ///   the rotation speed of the device.
+  ///
+  /// ---
+  ///
+  /// The default value is `false`.
+  final bool centerLock;
+
+  /// Specifies the amount of time to wait before resetting
+  /// the reference point (center).
+  ///
+  /// ---
+  ///
+  /// The default value is `Duration(seconds: 1)`.
+  final Duration resetTime;
+
+  /// Specifies the sensitivity of the widget based on the gyroscope sensor value.
+  ///
+  /// ---
+  ///
+  /// The default value is `0.002`.
+  final double sensitivity;
+
+  /// Specifies how much the widget's position changes based on
+  /// the gyroscope sensor value.
+  ///
+  /// ---
+  ///
+  /// The default value is `10.0`.
+  final double shift;
+
+  /// Specifies the speed of the transformation animation.
+  ///
+  /// _**Notice**_
+  /// - We don't recommend making any changes.
+  /// - Suggested values range from `300` to `700 milliseconds`.
+  ///
+  /// ---
+  ///
+  /// The default value is `Duration(milliseconds: 500)`.
+  final Duration animationDuration;
+
+  /// You can set the transform/translation direction of the widget
+  /// to be the opposite of the device's rotation direction.
+  ///
+  /// ---
+  ///
+  /// The default value is `false`.
+  final bool reverse;
 
   @override
   State<GyroProvider> createState() => _GyroProviderState();
@@ -177,7 +271,7 @@ class _GyroProviderState extends State<GyroProvider>
     // Initialize animation
     _animationController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 500),
+      duration: widget.animationDuration,
     )
       ..addListener(_animationListener)
       ..addStatusListener(_animationStatusListener);
@@ -232,8 +326,8 @@ class _GyroProviderState extends State<GyroProvider>
     if (widget._mode != _GyroWidgetMode.provide) {
       // If the change in sensor value is consistently small over a period of time,
       // reset the reference point and animate it to move toward the center.
-      if (value.x.abs() < 0.1 && value.y.abs() < 0.1) {
-        _resetTimer ??= Timer(const Duration(seconds: 1), () {
+      if (value.x.abs() < 0.1 && value.y.abs() < 0.1 && !widget.centerLock) {
+        _resetTimer ??= Timer(widget.resetTime, () {
           _xTarget = 0;
           _yTarget = 0;
           _resetTimer = null;
@@ -320,10 +414,38 @@ class _GyroProviderState extends State<GyroProvider>
     return Transform(
       alignment: Alignment.center,
       transform: Matrix4.identity()
-        ..setEntry(3, 0, -_yAnimation.value * 0.002)
-        ..setEntry(3, 1, -_xAnimation.value * 0.002)
-        ..setEntry(0, 3, _yAnimation.value * 10)
-        ..setEntry(1, 3, _xAnimation.value * 10),
+        ..setEntry(
+          3,
+          0,
+          -_yAnimation.value *
+              widget.sensitivity *
+              (widget.horizontalLock ? 0 : 1) *
+              (widget.reverse ? -1 : 1),
+        )
+        ..setEntry(
+          3,
+          1,
+          -_xAnimation.value *
+              widget.sensitivity *
+              (widget.verticalLock ? 0 : 1) *
+              (widget.reverse ? -1 : 1),
+        )
+        ..setEntry(
+          0,
+          3,
+          _yAnimation.value *
+              widget.shift *
+              (widget.horizontalLock ? 0 : 1) *
+              (widget.reverse ? -1 : 1),
+        )
+        ..setEntry(
+          1,
+          3,
+          _xAnimation.value *
+              widget.shift *
+              (widget.verticalLock ? 0 : 1) *
+              (widget.reverse ? -1 : 1),
+        ),
       child: widget.child,
     );
   }

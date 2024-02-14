@@ -16,7 +16,7 @@ import 'package:gyro_provider/models/vector_model.dart';
 /// <br />
 ///
 /// ### Example
-/// ```
+/// ```dart
 /// class _WidgetState extends State<Widget> {
 ///   final RotationController _rotationController = RotationController();
 ///

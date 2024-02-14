@@ -40,6 +40,7 @@ class _MyAppState extends State<MyApp> {
                 height: 100,
               ),
               GyroProvider.skew(
+                verticalLock: true,
                 child: Container(
                   color: Colors.red,
                   width: 100,
