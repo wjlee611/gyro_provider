@@ -1,8 +1,18 @@
+## 0.0.4
+
+### Publish test version
+
+- Create `README.md` file
+- Change iOS motion manager interval to 0.1 seconds (from 1 second)
+
 ## 0.0.3
 
 ### Publish test version
 
-- implement iOS EventChannel (unstable)
+- Fix bug when call controller dispose
+- Implements iOS EventChannel (not tested)
+
+  iPhone emulator cannot be tested because `CMMotionManager` is disabled.
 
 ## 0.0.2
 

@@ -8,10 +8,10 @@ var _motionManager: CMMotionManager!
 func _initMotionManager() {
     if (_motionManager == nil) {
         _motionManager = CMMotionManager()
-        _motionManager.accelerometerUpdateInterval = 1
-        _motionManager.deviceMotionUpdateInterval = 1
-        _motionManager.gyroUpdateInterval = 1
-        _motionManager.magnetometerUpdateInterval = 1
+        _motionManager.accelerometerUpdateInterval = 0.1
+        _motionManager.deviceMotionUpdateInterval = 0.1
+        _motionManager.gyroUpdateInterval = 0.1
+        _motionManager.magnetometerUpdateInterval = 0.1
     }
 }
 

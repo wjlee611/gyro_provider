@@ -16,7 +16,6 @@ public class GyroProviderPlugin: NSObject, FlutterPlugin {
         _eventChannels[gyro] = gyroEventChannel
         _streamHandlers[gyro] = gyroStreamHandler
         
-        
         let rotateStreamHandler = RotateStreamHandler()
         let rotate = "com.gmail.wjlee611.rotate_event_channel"
         let rotateEventChannel = FlutterEventChannel(
@@ -26,7 +25,6 @@ public class GyroProviderPlugin: NSObject, FlutterPlugin {
         rotateEventChannel.setStreamHandler(rotateStreamHandler)
         _eventChannels[rotate] = rotateEventChannel
         _streamHandlers[rotate] = rotateStreamHandler
-        
         
         _isCleanUp = false
     }

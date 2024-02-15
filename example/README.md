@@ -1,7 +1,3 @@
-# gyro_provider
+# gyro_provider_example
 
-Test version, commented only.
-
-## Getting Started
-
-Test version, commented only.
+Demonstrates how to use the gyro_provider plugin.
