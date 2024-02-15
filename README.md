@@ -18,7 +18,7 @@ A plugin that provides data from gyroscopes and rotation sensors and related han
 
 3. Build your awesome widgets!
 
-   ![gyro_provider_demo](example/images/gyro_provider_demo.gif)
+   ![gyro_provider_demo](https://github.com/wjlee611/gyro_provider/blob/main/example/images/gyro_provider_demo.gif)
 
 ### Example
 
