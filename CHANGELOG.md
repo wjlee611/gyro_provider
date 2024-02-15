@@ -1,3 +1,9 @@
+## 0.0.6
+
+### Publish test version
+
+- Add more dartdoc comments
+
 ## 0.0.5
 
 ### Publish test version

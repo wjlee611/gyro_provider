@@ -8,8 +8,13 @@
 /// The toString method is represented to 17 decimal places,
 /// but the actual data is stored to the maximum accuracy provided by the device.
 class VectorModel {
+  /// Vector along the x-axis of type double
   final double x;
+
+  /// Vector along the y-axis of type double
   final double y;
+
+  /// Vector along the z-axis of type double
   final double z;
 
   VectorModel(this.x, this.y, this.z);

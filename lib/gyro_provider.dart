@@ -11,6 +11,11 @@ enum _GyroWidgetMode {
   // parallel, // Scalable to multiple modes, such as parallel.
 }
 
+/// ## [GyroProvider]
+/// The [GyroProvider] provides the gyroscope sensor values and position data
+/// (rotation data among other things) of a mobile device,
+/// and provides ready-made widgets without the need to process that data
+/// through other named constructors like [GyroProvider.skew].
 class GyroProvider extends StatefulWidget {
   final _GyroWidgetMode _mode;
 
@@ -227,38 +232,38 @@ class GyroProvider extends StatefulWidget {
 
 class _GyroProviderState extends State<GyroProvider>
     with SingleTickerProviderStateMixin {
-  // Controller object that provides sensor data provided via an EventChannel.
+  /// Controller object that provides sensor data provided via an EventChannel.
   final GyroscopeController _gyroscopeController = GyroscopeController();
   final RotationController _rotationController = RotationController();
 
-  // ValueNotifier object that holds the data to be passed to the callback function.
+  /// ValueNotifier object that holds the data to be passed to the callback function.
   final ValueNotifier<VectorModel> _gyroData =
       ValueNotifier(VectorModel(0, 0, 0));
   final ValueNotifier<VectorModel> _rotateData =
       ValueNotifier(VectorModel(0, 0, 0));
 
-  // AnimationController object for smoothing out the gaps between sensor events.
+  /// AnimationController object for smoothing out the gaps between sensor events.
   late final AnimationController _animationController;
 
-  // Animation object that holds x, y-axis rotation angle data.
+  /// Animation object that holds x, y-axis rotation angle data.
   late Animation<double> _xAnimation;
   late Animation<double> _yAnimation;
 
-  // CurvedAnimation object that stores the widget's animation curve.
+  /// CurvedAnimation object that stores the widget's animation curve.
   late final CurvedAnimation _linearCurve;
   late final CurvedAnimation _easeCurve;
 
-  // Variable that stores the target rotation angle for animations
-  // that operate between sensor events.
+  /// Variable that stores the target rotation angle for animations
+  /// that operate between sensor events.
   double _xTarget = 0;
   double _yTarget = 0;
 
-  // A boolean value indicating the status of whether the sensor is moving
-  // toward the reference point (aka. center).
+  /// A boolean value indicating the status of whether the sensor is moving
+  /// toward the reference point (aka. center).
   bool _onCenter = false;
 
-  // A timer object that prevents the widget from being set to the reference point
-  // for a certain number of seconds after the device stops rotating.
+  /// A timer object that prevents the widget from being set to the reference point
+  /// for a certain number of seconds after the device stops rotating.
   Timer? _resetTimer;
 
   @override
@@ -315,9 +320,9 @@ class _GyroProviderState extends State<GyroProvider>
     super.dispose();
   }
 
-  // Define what to do when listening to the gyroscope sensor value.
-  // - Callback the sensor value.
-  // - Process animations.
+  /// Define what to do when listening to the gyroscope sensor value.
+  /// - Callback the sensor value.
+  /// - Process animations.
   void _gyroListener() {
     var value = _gyroscopeController.value;
     _gyroData.value = value;
@@ -350,34 +355,34 @@ class _GyroProviderState extends State<GyroProvider>
     }
   }
 
-  // Define what to do when listening to the position sensor (rotation) value.
-  // - Callback the sensor value.
+  /// Define what to do when listening to the position sensor (rotation) value.
+  /// - Callback the sensor value.
   void _rotateListener() {
     var value = _rotationController.value;
     _rotateData.value = value;
     widget.rotation?.call(value);
   }
 
-  // A function that is called every tick of the animation, re-rendering the screen
-  // only when the animation is in motion.
+  /// A function that is called every tick of the animation, re-rendering the screen
+  /// only when the animation is in motion.
   void _animationListener() {
     if (_animationController.status == AnimationStatus.forward) {
       setState(() {});
     }
   }
 
-  // A function that is called when the animation state changes,
-  // changing it(_onCenter) to a non-centered(false) state
-  // when the animation action is complete.
+  /// A function that is called when the animation state changes,
+  /// changing it(_onCenter) to a non-centered(false) state
+  /// when the animation action is complete.
   void _animationStatusListener(AnimationStatus status) {
     if (status == AnimationStatus.completed) {
       _onCenter = false;
     }
   }
 
-  // Performs actions that modify and run animations only when mounted.
-  // The injected curve will animate from the current rotation angle
-  // to the target rotation angle.
+  /// Performs actions that modify and run animations only when mounted.
+  /// The injected curve will animate from the current rotation angle
+  /// to the target rotation angle.
   void _animation({required CurvedAnimation curve}) {
     if (!mounted) return;
 
