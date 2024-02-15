@@ -67,7 +67,8 @@ class RotationController with WidgetsBindingObserver, ChangeNotifier {
 
   static final RotationController _instance = RotationController._();
 
-  final EventChannel _eventChannel = const EventChannel('rotate_event_channel');
+  final EventChannel _eventChannel =
+      const EventChannel('com.gmail.wjlee611.rotate_event_channel');
 
   VectorModel _rotation = VectorModel(0, 0, 0);
 
@@ -87,5 +88,11 @@ class RotationController with WidgetsBindingObserver, ChangeNotifier {
         _isForeground = false;
         break;
     }
+  }
+
+  @override
+  // ignore: must_call_super
+  void dispose() {
+    // ignore super.dispose(); cause it is singleton.
   }
 }

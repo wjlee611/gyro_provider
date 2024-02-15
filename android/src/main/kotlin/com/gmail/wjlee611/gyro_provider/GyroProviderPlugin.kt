@@ -28,12 +28,12 @@ class GyroProviderPlugin: FlutterPlugin {
     val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
 
     // GYROSCOPE
-    gyroEventChannel = EventChannel(messenger, "gyro_event_channel")
+    gyroEventChannel = EventChannel(messenger, "com.gmail.wjlee611.gyro_event_channel")
     gyroStreamHandler = StreamHandlerImpl(sensorManager, Sensor.TYPE_GYROSCOPE)
     gyroEventChannel.setStreamHandler(gyroStreamHandler)
 
     // ROTATION
-    rotateEventChannel = EventChannel(messenger, "rotate_event_channel")
+    rotateEventChannel = EventChannel(messenger, "com.gmail.wjlee611.rotate_event_channel")
     rotateStreamHandler = StreamHandlerImpl(sensorManager, Sensor.TYPE_GAME_ROTATION_VECTOR)
     rotateEventChannel.setStreamHandler(rotateStreamHandler)
   }

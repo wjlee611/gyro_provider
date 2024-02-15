@@ -66,7 +66,8 @@ class GyroscopeController with WidgetsBindingObserver, ChangeNotifier {
 
   static final GyroscopeController _instance = GyroscopeController._();
 
-  final EventChannel _eventChannel = const EventChannel('gyro_event_channel');
+  final EventChannel _eventChannel =
+      const EventChannel('com.gmail.wjlee611.gyro_event_channel');
 
   VectorModel _gyroscope = VectorModel(0, 0, 0);
 
@@ -86,5 +87,11 @@ class GyroscopeController with WidgetsBindingObserver, ChangeNotifier {
         _isForeground = false;
         break;
     }
+  }
+
+  @override
+  // ignore: must_call_super
+  void dispose() {
+    // ignore super.dispose(); cause it is singleton.
   }
 }
