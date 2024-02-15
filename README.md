@@ -2,7 +2,7 @@
 
 A plugin that provides data from gyroscopes and rotation sensors and related handy widgets.
 
-### Getting Started
+## Getting Started
 
 1. Check out the supported platforms.
 
@@ -18,9 +18,9 @@ A plugin that provides data from gyroscopes and rotation sensors and related han
 
 3. Build your awesome widgets!
 
-   ![gyro_provider_demo](https://github.com/wjlee611/gyro_provider/blob/main/example/images/gyro_provider_demo.gif)
+   ![gyro_provider_demo](https://raw.githubusercontent.com/wjlee611/gyro_provider/main/example/images/gyro_provider_demo.gif)
 
-### Example
+## Example
 
 ```dart
 import 'package:flutter/material.dart';
@@ -129,18 +129,28 @@ See the comments for how to use the parameters.
 
 - GyroProvider
 
-  - gyroscope
-  - rotation
-  - builder
+  | parameter | type                                                           |
+  | --------- | -------------------------------------------------------------- |
+  | gyroscope | void Function(`VectorModel`)?                                  |
+  | rotation  | void Function(`VectorModel`)?                                  |
+  | builder   | Widget Function(`BuildContext`, `VectorModel`, `VectorModel`)? |
+
+  - `VectorModel`
+    Same as Vector3.
+    A data type with x, y, and z values.
+
+<br />
 
 - GyroProvider.skew
 
-  - child
-  - horizontalLock
-  - verticalLock
-  - centerLock
-  - resetTime
-  - sensitivity
-  - shift
-  - animationDuration
-  - reverse
+  | parameter         | type        |
+  | ----------------- | ----------- |
+  | horizontalLock    | `bool`?     |
+  | verticalLock      | `bool`?     |
+  | centerLock        | `bool`?     |
+  | resetTime         | `Duration`? |
+  | sensitivity       | `double`?   |
+  | shift             | `double`?   |
+  | animationDuration | `Duration`? |
+  | reverse           | `bool`?     |
+  | child             | `Widget`    |

@@ -1,7 +1,8 @@
 name: gyro_provider
-description: "A plugin that provides data from gyroscopes and rotation sensors and related handy widgets."
-version: 0.0.4
-homepage: "https://wjlee611.github.io/"
+description: A plugin that provides data from gyroscopes and rotation sensors and related handy widgets.
+version: 0.0.5
+homepage: https://wjlee611.github.io/
+repository: https://github.com/fluttercommunity/plus_plugins/tree/main/packages/sensors_plus/sensors_plus
 
 environment:
   sdk: ">=3.2.3 <4.0.0"
