@@ -44,10 +44,22 @@ import 'package:gyro_provider/models/vector_model.dart';
 /// ### Need to know
 /// - You can only listen while the app is in Foreground.
 class RotationController with WidgetsBindingObserver, ChangeNotifier {
+  /// ## [RotationController]
+  /// The [RotationController] provides the values of the device's position sensor. \
+  /// (Rotation only, without geomagnetic)
+  ///
+  /// _**Notice**_
+  /// - Sensor data is sent only in the [AppLifecycleState.resumed] state.
+  /// - Constructor implemented in the singleton pattern.
+  /// - Because it is implemented in a singleton pattern, the `dispose` method
+  ///   of the controller is implemented to not work.
+  /// - For performance, please call `removeListener`, `dispose (option)`
+  ///   when deleting a widget.
   factory RotationController() {
     return _instance;
   }
 
+  /// Private constructor of [RotationController]
   RotationController._() {
     WidgetsBinding.instance.addObserver(this);
 
@@ -72,6 +84,12 @@ class RotationController with WidgetsBindingObserver, ChangeNotifier {
 
   VectorModel _rotation = VectorModel(0, 0, 0);
 
+  /// Returns the value of the position sensor data as a [VectorModel].
+  ///
+  /// ---
+  ///
+  /// See Also:
+  /// - [VectorModel]
   VectorModel get value => _rotation;
 
   bool _isForeground = true;

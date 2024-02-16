@@ -1,5 +1,4 @@
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 
 class CardWidget extends StatelessWidget {
@@ -68,7 +67,7 @@ class CardWidget extends StatelessWidget {
                   Text(
                     '''
                     verticalLock: true
-                    centerLock: true
+                    resetLock: true
                     shift: 20
                     sensitivity: 0.0002,
                     reverse: true,

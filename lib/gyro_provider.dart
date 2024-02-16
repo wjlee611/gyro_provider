@@ -43,7 +43,7 @@ class GyroProvider extends StatefulWidget {
         child = null,
         horizontalLock = false,
         verticalLock = false,
-        centerLock = false,
+        resetLock = false,
         resetTime = const Duration(seconds: 1),
         sensitivity = 0.002,
         shift = 10.0,
@@ -116,7 +116,7 @@ class GyroProvider extends StatefulWidget {
   /// - child
   /// - horizontalLock
   /// - verticalLock
-  /// - centerLock
+  /// - resetLock
   /// - resetTime
   /// - sensitivity
   /// - shift
@@ -140,7 +140,7 @@ class GyroProvider extends StatefulWidget {
     required this.child,
     this.horizontalLock = false,
     this.verticalLock = false,
-    this.centerLock = false,
+    this.resetLock = false,
     this.resetTime = const Duration(seconds: 1),
     this.sensitivity = 0.002,
     this.shift = 10.0,
@@ -182,7 +182,7 @@ class GyroProvider extends StatefulWidget {
   /// ---
   ///
   /// The default value is `false`.
-  final bool centerLock;
+  final bool resetLock;
 
   /// Specifies the amount of time to wait before resetting
   /// the reference point (center).
@@ -331,7 +331,7 @@ class _GyroProviderState extends State<GyroProvider>
     if (widget._mode != _GyroWidgetMode.provide) {
       // If the change in sensor value is consistently small over a period of time,
       // reset the reference point and animate it to move toward the center.
-      if (value.x.abs() < 0.1 && value.y.abs() < 0.1 && !widget.centerLock) {
+      if (value.x.abs() < 0.1 && value.y.abs() < 0.1 && !widget.resetLock) {
         _resetTimer ??= Timer(widget.resetTime, () {
           _xTarget = 0;
           _yTarget = 0;

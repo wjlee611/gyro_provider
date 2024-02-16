@@ -1,3 +1,10 @@
+## 0.0.7
+
+### Publish test version
+
+- Change `centerLock` to `resetLock`
+- Add more dartdoc comments
+
 ## 0.0.6
 
 ### Publish test version

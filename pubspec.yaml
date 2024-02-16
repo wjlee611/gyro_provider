@@ -1,6 +1,6 @@
 name: gyro_provider
 description: A plugin that provides data from gyroscopes and rotation sensors and related handy widgets.
-version: 0.0.6
+version: 0.0.7
 homepage: https://wjlee611.github.io/
 repository: https://github.com/wjlee611/gyro_provider
 

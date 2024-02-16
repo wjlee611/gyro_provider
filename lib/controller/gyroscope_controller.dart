@@ -43,10 +43,21 @@ import 'package:gyro_provider/models/vector_model.dart';
 /// ### Need to know
 /// - You can only listen while the app is in Foreground.
 class GyroscopeController with WidgetsBindingObserver, ChangeNotifier {
+  /// ## [GyroscopeController]
+  /// The [GyroscopeController] provides the values of the device's gyro sensor.
+  ///
+  /// _**Notice**_
+  /// - Sensor data is sent only in the [AppLifecycleState.resumed] state.
+  /// - Constructor implemented in the singleton pattern.
+  /// - Because it is implemented in a singleton pattern, the `dispose` method
+  ///   of the controller is implemented to not work.
+  /// - For performance, please call `removeListener`, `dispose (option)`
+  ///   when deleting a widget.
   factory GyroscopeController() {
     return _instance;
   }
 
+  /// Private constructor of [GyroscopeController]
   GyroscopeController._() {
     WidgetsBinding.instance.addObserver(this);
 
@@ -71,6 +82,12 @@ class GyroscopeController with WidgetsBindingObserver, ChangeNotifier {
 
   VectorModel _gyroscope = VectorModel(0, 0, 0);
 
+  /// Returns the value of the gyroscope sensor data as a [VectorModel].
+  ///
+  /// ---
+  ///
+  /// See Also:
+  /// - [VectorModel]
   VectorModel get value => _gyroscope;
 
   bool _isForeground = true;

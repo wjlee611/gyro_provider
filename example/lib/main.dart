@@ -38,7 +38,7 @@ class GyroProviderTest extends StatelessWidget {
         surfaceTintColor: Colors.transparent,
         child: GyroProvider.skew(
           verticalLock: true,
-          centerLock: true,
+          resetLock: true,
           shift: 20,
           sensitivity: 0.0002,
           reverse: true,

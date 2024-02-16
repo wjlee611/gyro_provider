@@ -10,7 +10,7 @@ A plugin that provides data from gyroscopes and rotation sensors and related han
    | --- | --- | ---- |
    | ✅  | ✅  | ❌   |
 
-   > [!NOTE]
+   > [**NOTE**]
    >
    > Vector data on unsupported devices or platforms will all have a value of (0, 0, 0).
 
@@ -63,7 +63,7 @@ class GyroProviderTest extends StatelessWidget {
         surfaceTintColor: Colors.transparent,
         child: GyroProvider.skew(
           verticalLock: true,
-          centerLock: true,
+          resetLock: true,
           shift: 20,
           sensitivity: 0.0002,
           reverse: true,
@@ -136,8 +136,10 @@ See the comments for how to use the parameters.
   | builder   | Widget Function(`BuildContext`, `VectorModel`, `VectorModel`)? |
 
   - `VectorModel`
+
     Same as Vector3.
-    A data type with x, y, and z values.
+
+    A data type with x, y, and z values (double type).
 
 <br />
 
@@ -147,7 +149,7 @@ See the comments for how to use the parameters.
   | ----------------- | ----------- |
   | horizontalLock    | `bool`?     |
   | verticalLock      | `bool`?     |
-  | centerLock        | `bool`?     |
+  | resetLock         | `bool`?     |
   | resetTime         | `Duration`? |
   | sensitivity       | `double`?   |
   | shift             | `double`?   |
