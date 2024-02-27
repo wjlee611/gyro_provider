@@ -1,3 +1,9 @@
+## 0.1.0
+
+### gyro_provider released!
+
+- iOS event channel tested
+
 ## 0.0.7
 
 ### Publish test version
